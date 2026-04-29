@@ -58,3 +58,16 @@ while ! ${dbcmd} -e "show databases;" >/dev/null 2>&1; do
   fi
 done
 echo "Database ready!"
+
+echo "Assign read rights to mail log for rejection "
+setfacl -m u:anonaddy:r /var/log/mail.log
+cat > /etc/logrotate.d/rsyslog <<EOL
+/var/log/mail.log
+{
+        ...
+        postrotate
+                /usr/lib/rsyslog/rsyslog-rotate
+                [ -f /var/log/mail.log ] && setfacl -m u:anonaddy:r /var/log/mail.log
+        endscript
+}
+EOL
